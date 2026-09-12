@@ -1,0 +1,19 @@
+# Dataset Configuration for RT-DETR / Ultralytics
+# Construction Site Safety & PPE Compliance
+
+# Root path (can be absolute or relative to execution directory)
+path: ../dataset
+
+# Relative paths to image directories
+train: train/images
+val: valid/images
+test: test/images
+
+# Number of classes
+nc: 3
+
+# Class names mapping (0-indexed)
+names:
+  0: hard-hat       # Non-COCO custom class (Crucial for Hard Constraint #3)
+  1: safety-vest    # Non-COCO custom class (Crucial for Hard Constraint #3)
+  2: person         # Reference class for spatial containment reasoning

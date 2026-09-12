@@ -1,0 +1,24 @@
+# Hyperparameters Configuration for RT-DETR Fine-Tuning
+# Ensures 100% Reproducibility as per RAP Hard Constraint #4
+
+# Model Architecture
+model: rtdetr-l.pt         # Pretrained RT-DETR Large checkpoint
+imgsz: 640                 # Standard input resolution for Real-Time Detection Transformers
+
+# Optimization Parameters
+epochs: 35                 # Sufficient for transfer learning convergence
+batch: 8                   # Safe for 15GB VRAM (Colab T4 / RTX 3060)
+optimizer: AdamW           # Transformer-optimized adaptive optimizer
+lr0: 0.0001                # Initial learning rate (1e-4 standard for transformer fine-tuning)
+lrf: 0.01                  # Final learning rate factor (lr0 * lrf = 1e-6)
+weight_decay: 0.0001       # L2 regularization to prevent overfitting
+
+# Reproducibility Controls (MANDATORY)
+seed: 42                   # Fixed random seed for weights init, data shuffle, augmentations
+deterministic: true        # Forces deterministic PyTorch CUDA algorithms
+
+# Augmentations (Curated for Construction / PPE domain)
+mosaic: 1.0                # Mosaic augmentation (combines 4 images, handles small scales)
+mixup: 0.15                # MixUp augmentation (handles occlusion)
+degrees: 10.0              # Slight rotation
+fliplr: 0.5                # Horizontal flip

@@ -1,0 +1,22 @@
+# Production Dependencies for RAP RT-DETR Detection & Reasoning Service
+
+# FastAPI & Web Server
+fastapi>=0.110.0,<1.0.0
+uvicorn[standard]>=0.28.0,<1.0.0
+pydantic>=2.6.0,<3.0.0
+python-multipart>=0.0.9
+
+# Computer Vision & Machine Learning Core
+torch>=2.1.0
+torchvision>=0.16.0
+ultralytics>=8.1.0
+numpy>=1.24.0,<2.0.0
+pillow>=10.0.0
+
+# Utilities & Config
+pyyaml>=6.0.1
+requests>=2.31.0
+
+# Testing & Quality
+pytest>=8.0.0
+httpx>=0.27.0
