@@ -4,7 +4,7 @@
 **Submission for:** Rapid Acceleration Partners (RAP) Pre-Hackathon Screening  
 **Domain:** Construction Site Safety & Worker PPE Compliance Monitoring  
 **Target Architecture:** RT-DETR Large (Baidu Real-Time Detection Transformer)  
-**Classes:** `hard-hat` (Non-COCO, Class 0), `safety-vest` (Non-COCO, Class 1), `person` (Reference, Class 2)
+**Classes:** `Hardhat`, `Safety Vest`, `Person`, `NO-Hardhat`, `NO-Safety Vest`
 
 ---
 
@@ -128,7 +128,12 @@ pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-### 6.2 Sample Request & Response: Part A (`POST /api/v1/detect`)
+### 6.2 Interactive Web Dashboard (Primary Interface)
+To eliminate the friction of raw API testing, the system serves an interactive frontend directly at the root endpoint.
+- **Access URL:** `http://localhost:8000/`
+- **Features:** Allows evaluators to upload an image, type a natural language query (e.g. "Count the workers"), drag a Confidence Threshold slider, and visualize the RT-DETR bounding boxes and spatial reasoning results live in the browser.
+
+### 6.3 Sample Request & Response: Part A (`POST /api/v1/detect`)
 ```bash
 curl -X POST "http://localhost:8000/api/v1/detect?confidence_threshold=0.40" \
      -H "accept: application/json" \
