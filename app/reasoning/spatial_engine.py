@@ -39,9 +39,11 @@ class SpatialReasoningEngine:
         Groups detections and performs spatial association between workers,
         helmets (head region), and safety vests (torso region).
         """
-        people = [d for d in detections if d.class_name == "person"]
-        helmets = [d for d in detections if d.class_name == "hard-hat"]
-        vests = [d for d in detections if d.class_name == "safety-vest"]
+        people = [d for d in detections if d.class_name.lower() in ["person"]]
+        helmets = [d for d in detections if d.class_name.lower() in ["hardhat", "hard-hat", "helmet"]]
+        no_helmets = [d for d in detections if d.class_name.lower() in ["no-hardhat"]]
+        vests = [d for d in detections if d.class_name.lower() in ["safety vest", "safety-vest"]]
+        no_vests = [d for d in detections if d.class_name.lower() in ["no-safety vest"]]
 
         worker_profiles = []
 
@@ -65,37 +67,67 @@ class SpatialReasoningEngine:
                 p_box.y1 + (0.68 * p_h)
             )
 
-            has_helmet = False
-            for h in helmets:
-                h_center_x = (h.bbox.x1 + h.bbox.x2) / 2.0
-                h_center_y = (h.bbox.y1 + h.bbox.y2) / 2.0
-                # Check center point containment or substantial overlap
-                if (head_region[0] <= h_center_x <= head_region[2] and 
-                    head_region[1] <= h_center_y <= head_region[3]):
-                    has_helmet = True
+            # Check for NO-Hardhat detection overlapping this person (direct evidence of non-compliance)
+            has_no_helmet_flag = False
+            for nh in no_helmets:
+                nh_center_x = (nh.bbox.x1 + nh.bbox.x2) / 2.0
+                nh_center_y = (nh.bbox.y1 + nh.bbox.y2) / 2.0
+                if (head_region[0] <= nh_center_x <= head_region[2] and 
+                    head_region[1] <= nh_center_y <= head_region[3]):
+                    has_no_helmet_flag = True
                     break
-                elif compute_box_intersection_ratio(h.bbox, head_region) > 0.35:
-                    has_helmet = True
+                elif compute_box_intersection_ratio(nh.bbox, head_region) > 0.25:
+                    has_no_helmet_flag = True
+                    break
+
+            has_helmet = False
+            if not has_no_helmet_flag:
+                for h in helmets:
+                    h_center_x = (h.bbox.x1 + h.bbox.x2) / 2.0
+                    h_center_y = (h.bbox.y1 + h.bbox.y2) / 2.0
+                    # Check center point containment or substantial overlap
+                    if (head_region[0] <= h_center_x <= head_region[2] and 
+                        head_region[1] <= h_center_y <= head_region[3]):
+                        has_helmet = True
+                        break
+                    elif compute_box_intersection_ratio(h.bbox, head_region) > 0.35:
+                        has_helmet = True
+                        break
+
+            # Check for NO-Safety Vest detection overlapping this person
+            has_no_vest_flag = False
+            for nv in no_vests:
+                nv_center_x = (nv.bbox.x1 + nv.bbox.x2) / 2.0
+                nv_center_y = (nv.bbox.y1 + nv.bbox.y2) / 2.0
+                if (torso_region[0] <= nv_center_x <= torso_region[2] and 
+                    torso_region[1] <= nv_center_y <= torso_region[3]):
+                    has_no_vest_flag = True
+                    break
+                elif compute_box_intersection_ratio(nv.bbox, torso_region) > 0.25:
+                    has_no_vest_flag = True
                     break
 
             has_vest = False
-            for v in vests:
-                v_center_x = (v.bbox.x1 + v.bbox.x2) / 2.0
-                v_center_y = (v.bbox.y1 + v.bbox.y2) / 2.0
-                if (torso_region[0] <= v_center_x <= torso_region[2] and 
-                    torso_region[1] <= v_center_y <= torso_region[3]):
-                    has_vest = True
-                    break
-                elif compute_box_intersection_ratio(v.bbox, torso_region) > 0.35:
-                    has_vest = True
-                    break
+            if not has_no_vest_flag:
+                for v in vests:
+                    v_center_x = (v.bbox.x1 + v.bbox.x2) / 2.0
+                    v_center_y = (v.bbox.y1 + v.bbox.y2) / 2.0
+                    if (torso_region[0] <= v_center_x <= torso_region[2] and 
+                        torso_region[1] <= v_center_y <= torso_region[3]):
+                        has_vest = True
+                        break
+                    elif compute_box_intersection_ratio(v.bbox, torso_region) > 0.35:
+                        has_vest = True
+                        break
 
             worker_profiles.append({
                 "worker_id": idx,
                 "bbox": p_box,
                 "has_helmet": has_helmet,
+                "has_no_helmet_flag": has_no_helmet_flag,
                 "has_vest": has_vest,
-                "compliant": has_helmet and has_vest
+                "has_no_vest_flag": has_no_vest_flag,
+                "compliant": has_helmet and has_vest and not has_no_helmet_flag and not has_no_vest_flag
             })
 
         class_counts = Counter(d.class_name for d in detections)

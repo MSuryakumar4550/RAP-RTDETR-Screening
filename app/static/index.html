@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAP • RT-DETR Detection & Reasoning Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0A0D14;
+      --bg-secondary: #111622;
+      --bg-card: rgba(18, 24, 38, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(59, 130, 246, 0.3);
+      --accent-blue: #3B82F6;
+      --accent-cyan: #06B6D4;
+      --accent-green: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-red: #EF4444;
+      --accent-purple: #8B5CF6;
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.06) 0%, transparent 40%);
+      padding-bottom: 50px;
+    }
+
+    /* Header */
+    header {
+      background: rgba(10, 13, 20, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: white;
+      font-size: 18px;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .brand-title h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-title p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      padding: 6px 14px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 20px;
+      color: var(--accent-green);
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Container */
+    .main-container {
+      max-width: 1280px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    /* Navigation Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-secondary);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      width: fit-content;
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-blue);
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+    }
+
+    /* Layout Grid */
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .grid-container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Upload Zone */
+    .drop-zone {
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.02);
+      margin-bottom: 20px;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.06);
+    }
+
+    .drop-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .drop-text {
+      font-size: 14px;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .drop-subtext {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Controls */
+    .control-group {
+      margin-bottom: 18px;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-blue);
+    }
+
+    /* Question Input */
+    .input-box {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-box:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Preset Chips */
+    .chips-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin: 12px 0 8px;
+    }
+
+    .chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--text-main);
+      border-color: var(--accent-blue);
+    }
+
+    /* Action Button */
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent-blue), #2563EB);
+      color: white;
+      border: none;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Visualizer & Canvas */
+    .viewport-box {
+      position: relative;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      overflow: hidden;
+      min-height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+    }
+
+    #previewCanvas {
+      max-width: 100%;
+      max-height: 520px;
+      display: block;
+      border-radius: 8px;
+    }
+
+    .empty-state {
+      color: var(--text-muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    /* Metrics Strip */
+    .metrics-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .metric-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .metric-name {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Reasoning Output Cards */
+    .reasoning-panel {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tag-pill {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .tag-visual {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .tag-unrelated {
+      background: rgba(156, 163, 175, 0.15);
+      color: var(--text-muted);
+      border: 1px solid rgba(156, 163, 175, 0.3);
+    }
+
+    .tag-guardrail-pass {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .tag-guardrail-fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .answer-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .answer-card.guardrail-active {
+      border-left-color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.05);
+    }
+
+    /* Table */
+    .table-container {
+      margin-top: 16px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .cls-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .loader {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">RAP</div>
+      <div class="brand-title">
+        <h1>RT-DETR Detection & Reasoning Studio</h1>
+        <p>Pre-Hackathon Screening • Computer Vision + Applied ML</p>
+      </div>
+    </div>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      <span>RT-DETR-Large Ready</span>
+    </div>
+  </header>
+
+  <main class="main-container">
+
+    <!-- Mode Tabs -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" id="tabDetectBtn" onclick="switchTab('detect')">
+        <span>🎯</span> Part A — Object Detection
+      </button>
+      <button class="tab-btn" id="tabReasonBtn" onclick="switchTab('reason')">
+        <span>🧠</span> Part B — Natural Language Reasoning
+      </button>
+    </div>
+
+    <!-- Main Workspace Grid -->
+    <div class="grid-container">
+
+      <!-- Left Column: Controls & Inputs -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span id="controlIcon">📸</span>
+            <span id="controlTitle">Input Configuration</span>
+          </div>
+        </div>
+
+        <!-- File Upload Zone -->
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div class="drop-icon">📁</div>
+          <div class="drop-text" id="dropLabel">Click or Drag & Drop Image Here</div>
+          <div class="drop-subtext">Supports JPEG, PNG, WEBP</div>
+          <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+        </div>
+
+        <!-- Part A Control: Confidence Slider -->
+        <div class="control-group" id="partAControls">
+          <div class="control-label">
+            <span>Confidence Threshold</span>
+            <span id="confVal" style="color: var(--accent-blue); font-family: monospace;">0.35</span>
+          </div>
+          <input type="range" id="confSlider" min="0.10" max="0.95" step="0.05" value="0.35" class="slider" oninput="updateConfidence(this.value)">
+        </div>
+
+        <!-- Part B Control: Question Input -->
+        <div class="control-group" id="partBControls" style="display: none;">
+          <div class="control-label">
+            <span>Natural Language Question</span>
+          </div>
+          <input type="text" id="queryInput" class="input-box" placeholder="Ask anything about the image...">
+
+          <div class="chips-label">Sample Questions:</div>
+          <div class="chips-row">
+            <span class="chip" onclick="setQuery('Is anyone not wearing a helmet?')">Helmet compliance?</span>
+            <span class="chip" onclick="setQuery('How many workers are present?')">Count workers?</span>
+            <span class="chip" onclick="setQuery('Is anyone wearing a safety vest?')">Safety vest check?</span>
+            <span class="chip" onclick="setQuery('What is the capital of France?')">Unrelated query test</span>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <button class="btn-submit" id="submitBtn" onclick="executeCurrentMode()" disabled>
+          <span id="btnText">Run Analysis</span>
+        </button>
+      </div>
+
+      <!-- Right Column: Visualizer & Results -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🖥️</span> Live Inference Viewport
+          </div>
+          <div id="quickStats" style="font-size: 12px; color: var(--text-muted);">Awaiting image</div>
+        </div>
+
+        <!-- Canvas Display Area -->
+        <div class="viewport-box">
+          <canvas id="previewCanvas"></canvas>
+          <div class="empty-state" id="emptyState">
+            <div style="font-size: 40px; margin-bottom: 8px;">🖼️</div>
+            Upload an image and run analysis to render bounding boxes and spatial reasoning
+          </div>
+        </div>
+
+        <!-- Metrics Strip (Part A) -->
+        <div class="metrics-strip" id="metricsStrip" style="display: none;">
+          <div class="metric-item">
+            <div class="metric-value" id="metricTime">0ms</div>
+            <div class="metric-name">Inference Latency</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" id="metricTotal">0</div>
+            <div class="metric-name">Detections Count</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-value" id="metricResolution">0x0</div>
+            <div class="metric-name">Dimensions</div>
+          </div>
+        </div>
+
+        <!-- Table of Detections (Part A) -->
+        <div class="table-container" id="detectionsTableContainer" style="display: none;">
+          <table>
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Confidence</th>
+                <th>Coordinates (x1, y1, x2, y2)</th>
+              </tr>
+            </thead>
+            <tbody id="detectionsTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Reasoning Results (Part B) -->
+        <div class="reasoning-panel" id="reasoningPanel" style="display: none;">
+          <div class="badge-row">
+            <span class="tag-pill" id="intentBadge">IMAGE_OBJECT_QUERY</span>
+            <span class="tag-pill" id="guardrailBadge">GUARDRAIL: PASSED</span>
+          </div>
+          <div class="answer-card" id="answerCard">
+            <!-- Answer text injected here -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    let activeMode = 'detect';
+    let selectedFile = null;
+    let loadedImage = null;
+
+    const CLASS_COLORS = {
+      'hard-hat': '#3B82F6',     // Blue
+      'safety-vest': '#F59E0B',   // Amber / Orange
+      'person': '#8B5CF6',        // Purple
+      'hardhat': '#3B82F6',
+      'no-hardhat': '#EF4444',    // Red
+      'vest': '#F59E0B',
+      'default': '#10B981'
+    };
+
+    function switchTab(mode) {
+      activeMode = mode;
+      document.getElementById('tabDetectBtn').classList.toggle('active', mode === 'detect');
+      document.getElementById('tabReasonBtn').classList.toggle('active', mode === 'reason');
+
+      document.getElementById('partAControls').style.display = mode === 'detect' ? 'block' : 'none';
+      document.getElementById('partBControls').style.display = mode === 'reason' ? 'block' : 'none';
+
+      document.getElementById('metricsStrip').style.display = 'none';
+      document.getElementById('detectionsTableContainer').style.display = 'none';
+      document.getElementById('reasoningPanel').style.display = 'none';
+
+      document.getElementById('btnText').textContent = mode === 'detect' ? 'Run RT-DETR Detection' : 'Execute Reasoning Engine';
+      
+      if (loadedImage) {
+        drawImageOnCanvas(loadedImage);
+      }
+    }
+
+    function setQuery(text) {
+      document.getElementById('queryInput').value = text;
+    }
+
+    function updateConfidence(val) {
+      document.getElementById('confVal').textContent = parseFloat(val).toFixed(2);
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      processFile(file);
+    }
+
+    // Drag and drop handlers
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        processFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    function processFile(file) {
+      selectedFile = file;
+      document.getElementById('dropLabel').textContent = file.name;
+      document.getElementById('submitBtn').disabled = false;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          loadedImage = img;
+          drawImageOnCanvas(img);
+          document.getElementById('emptyState').style.display = 'none';
+          document.getElementById('previewCanvas').style.display = 'block';
+          document.getElementById('quickStats').textContent = `${img.width} × ${img.height} px`;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function drawImageOnCanvas(img) {
+      const canvas = document.getElementById('previewCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+    }
+
+    async function executeCurrentMode() {
+      if (!selectedFile) return;
+
+      const btn = document.getElementById('submitBtn');
+      const originalText = document.getElementById('btnText').textContent;
+      btn.disabled = true;
+      btn.innerHTML = `<div class="loader"></div> Processing...`;
+
+      try {
+        if (activeMode === 'detect') {
+          await runDetection();
+        } else {
+          await runReasoning();
+        }
+      } catch (err) {
+        alert('API Execution error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span id="btnText">${originalText}</span>`;
+      }
+    }
+
+    async function runDetection() {
+      const conf = document.getElementById('confSlider').value;
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const res = await fetch(`/api/v1/detect?confidence_threshold=${conf}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+
+      // Update Metrics
+      document.getElementById('metricsStrip').style.display = 'grid';
+      document.getElementById('metricTime').textContent = `${data.inference_time_ms} ms`;
+      document.getElementById('metricTotal').textContent = data.total_detections;
+      document.getElementById('metricResolution').textContent = `${data.image_width}×${data.image_height}`;
+
+      // Render Boxes on Canvas
+      renderDetectionsOnCanvas(data.detections);
+
+      // Render Table
+      renderTable(data.detections);
+    }
+
+    function renderDetectionsOnCanvas(detections) {
+      const canvas = document.getElementById('previewCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(loadedImage, 0, 0);
+
+      detections.forEach(d => {
+        const box = d.bbox;
+        const color = CLASS_COLORS[d.class_name.toLowerCase()] || CLASS_COLORS['default'];
+
+        // Box border
+        ctx.strokeStyle = color;
+        ctx.lineWidth = Math.max(3, Math.round(canvas.width / 350));
+        ctx.strokeRect(box.x1, box.y1, box.width, box.height);
+
+        // Label pill
+        const label = `${d.class_name} ${(d.confidence * 100).toFixed(0)}%`;
+        ctx.font = `bold ${Math.max(14, Math.round(canvas.width / 45))}px Inter, sans-serif`;
+        const textWidth = ctx.measureText(label).width;
+        const textHeight = Math.max(16, Math.round(canvas.width / 45));
+
+        ctx.fillStyle = color;
+        ctx.fillRect(box.x1, Math.max(0, box.y1 - textHeight - 8), textWidth + 12, textHeight + 8);
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(label, box.x1 + 6, Math.max(textHeight, box.y1 - 6));
+      });
+    }
+
+    function renderTable(detections) {
+      const container = document.getElementById('detectionsTableContainer');
+      const tbody = document.getElementById('detectionsTableBody');
+      tbody.innerHTML = '';
+
+      if (detections.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No objects detected above confidence threshold</td></tr>`;
+      } else {
+        detections.forEach(d => {
+          const color = CLASS_COLORS[d.class_name.toLowerCase()] || CLASS_COLORS['default'];
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><span class="cls-dot" style="background: ${color};"></span><strong>${d.class_name}</strong></td>
+            <td>${(d.confidence * 100).toFixed(1)}%</td>
+            <td style="font-family: monospace; color: var(--text-muted);">[${Math.round(d.bbox.x1)}, ${Math.round(d.bbox.y1)}, ${Math.round(d.bbox.x2)}, ${Math.round(d.bbox.y2)}]</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      container.style.display = 'block';
+    }
+
+    async function runReasoning() {
+      const question = document.getElementById('queryInput').value || 'Is anyone not wearing a helmet?';
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('question', question);
+
+      const res = await fetch('/api/v1/reason', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+
+      const panel = document.getElementById('reasoningPanel');
+      const intentBadge = document.getElementById('intentBadge');
+      const guardrailBadge = document.getElementById('guardrailBadge');
+      const answerCard = document.getElementById('answerCard');
+
+      // Badges
+      intentBadge.textContent = data.intent;
+      intentBadge.className = data.detector_called ? 'tag-pill tag-visual' : 'tag-pill tag-unrelated';
+
+      if (data.confidence_guardrail_triggered) {
+        guardrailBadge.textContent = 'GUARDRAIL: INSUFFICIENT INFO';
+        guardrailBadge.className = 'tag-pill tag-guardrail-fail';
+        answerCard.className = 'answer-card guardrail-active';
+      } else {
+        guardrailBadge.textContent = 'GUARDRAIL: PASSED';
+        guardrailBadge.className = 'tag-pill tag-guardrail-pass';
+        answerCard.className = 'answer-card';
+      }
+
+      answerCard.innerHTML = `<strong>Answer:</strong> ${data.answer}`;
+      panel.style.display = 'flex';
+    }
+  </script>
+</body>
+</html>

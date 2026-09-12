@@ -82,7 +82,15 @@ User Query + Image ──> [1. Intent Router]
      [Unrelated Query]             [Image Object Query]
      (Bypass Detector)                      │
                                             ▼
-                                  [Part A RT-DETR Model]
+                              ┌─────── Dual-Model ───────┐
+                              │                          │
+                              ▼                          ▼
+                    [Custom PPE Model]         [COCO Base Model]
+                    (Hardhat, Vest,            (Person detection
+                     NO-Hardhat, etc.)          with high recall)
+                              │                          │
+                              └──────── Merge ───────────┘
+                                (IoU-based deduplication)
                                             │
                                             ▼
                               [2. Confidence Guardrail]
@@ -94,6 +102,7 @@ User Query + Image ──> [1. Intent Router]
                                                            ▼
                                                [3. Spatial Reasoning]
                                                (Head/Torso Containment)
+                                               + NO-Hardhat/NO-Vest flags
 ```
 
 ### 5.1 Intent Routing Logic:

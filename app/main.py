@@ -8,9 +8,11 @@ Exposes:
 """
 
 import logging
+from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core import config
 from app.core.detector import detector_service
@@ -41,7 +43,19 @@ app.add_middleware(
 
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/bmp", "image/webp"}
 
-@app.get("/", tags=["Health"])
+# Static files directory
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+@app.get("/", tags=["Frontend"])
+def serve_dashboard():
+    """Serves the interactive RT-DETR Detection & Reasoning Web Dashboard."""
+    index_file = STATIC_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(str(index_file))
+    return {"message": "Welcome to RAP RT-DETR API. Visit /docs for Swagger documentation."}
+
 @app.get("/health", tags=["Health"])
 def health_check():
     """Health check endpoint confirming API status and model readiness."""
@@ -147,7 +161,7 @@ async def reason_about_image(
 
     detection_result = detector_service.detect_image(
         image_bytes=contents,
-        conf_threshold=0.30  # Low threshold so guardrails can inspect borderline confidence
+        conf_threshold=0.25  # Matches detector default threshold
     )
 
     # Step 3: Confidence Guardrails (Checking for Ambiguity, Distance, Low Confidence)

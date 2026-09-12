@@ -21,11 +21,11 @@ APP_VERSION = "1.0.0"
 WEIGHTS_PATH = os.getenv("MODEL_WEIGHTS_PATH", str(BASE_DIR / "weights" / "best.pt"))
 FALLBACK_MODEL = "rtdetr-l.pt"
 
-DEFAULT_CONFIDENCE_THRESHOLD = float(os.getenv("DEFAULT_CONFIDENCE_THRESHOLD", 0.40))
+DEFAULT_CONFIDENCE_THRESHOLD = float(os.getenv("DEFAULT_CONFIDENCE_THRESHOLD", 0.25))
 DEFAULT_IOU_THRESHOLD = float(os.getenv("DEFAULT_IOU_THRESHOLD", 0.50))
 
 # Guardrail Limits (Strictness thresholds for Part B)
-GUARDRAIL_MIN_CONFIDENCE = 0.45
+GUARDRAIL_MIN_CONFIDENCE = 0.35
 MIN_PIXEL_AREA_FOR_HEAD = 400.0  # 20x20 pixels minimum to reliably detect a helmet
 
 # Server Settings

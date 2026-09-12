@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pt
+weights/
+dataset/
+*.jpg
+*.ipynb
+*.py
+!app/
+!tests/
+!update_notebook.py
+!update_notebook_v3.py
+!test_quick.py
+!visualize_detections.py
