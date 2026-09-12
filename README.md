@@ -89,10 +89,6 @@ rap-rtdetr-screening/
 
 ## Quickstart & Deployment
 
-> [!IMPORTANT]
-> **Missing Weights Note:** Due to GitHub's 100MB file limit, the 66MB `best.pt` RT-DETR weights file is excluded via `.gitignore`. 
-> To run this project locally, you must first place your trained `best.pt` file inside the `weights/` directory. Alternatively, run the included Jupyter notebook in Google Colab to train and download a fresh model.
-
 ### Option A: Local Python Environment
 ```bash
 # 1. Install dependencies
