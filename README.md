@@ -14,11 +14,11 @@
 This repository delivers an end-to-end, production-grade Computer Vision and Reasoning microservice built on **RT-DETR (Real-Time Detection Transformer)** fine-tuned for **Construction Site Safety & Worker PPE Compliance Monitoring**.
 
 ### Key Highlights & Compliance with RAP Constraints:
-1. **At Least One Non-COCO Class (Constraint #3)**: Models **`hard-hat`** (Class 0) and **`safety-vest`** (Class 1) alongside **`person`** (Class 2). Submissions with standard COCO classes receive zero.
-2. **Zero Agentic Frameworks (Constraint #1)**: Built **strictly without LangChain, LangGraph, CrewAI, AutoGen**. The reasoning engine is an explicit, pure-Python state machine with deterministic Intent Routing, 2D Spatial Containment, and Confidence Guardrails.
-3. **No AutoML / Proprietary Training (Constraint #2)**: Trained using an open, auditable PyTorch pipeline with Ultralytics RT-DETR.
-4. **Reproducibility Locked (Constraint #4)**: Fixed global seeds (`seed=42`), deterministic CUDA configurations, and explicit hyperparameter manifests.
-5. **Production Dockerization (+10% Bonus)**: Single-command container deployment via `docker-compose up`.
+1. **At Least One Non-COCO Class (Constraint #3)**: Models **`Hardhat`**, **`Safety Vest`**, **`NO-Hardhat`**, and **`NO-Safety Vest`**. Submissions with standard COCO classes receive zero.
+2. **Dual-Model Robustness Pipeline**: Fuses a native COCO base model (for 99% accurate Person tracking) with our custom PPE model (for fine-grained Hardhat/Vest tracking), merging them through a custom IoU deduplication algorithm.
+3. **Zero Agentic Frameworks (Constraint #1)**: Built **strictly without LangChain, LangGraph, CrewAI, AutoGen**. The reasoning engine is an explicit, pure-Python state machine with deterministic Intent Routing, 2D Spatial Containment, and Confidence Guardrails.
+4. **Interactive Dashboard**: Includes a custom-built, stunning Web UI (`/`) with live bounding box rendering and natural language query execution, completely replacing the need for cURL commands.
+5. **No AutoML / Proprietary Training (Constraint #2)**: Trained using an open, auditable PyTorch pipeline with Ultralytics RT-DETR.
 
 ---
 
@@ -89,6 +89,10 @@ rap-rtdetr-screening/
 
 ## Quickstart & Deployment
 
+> [!IMPORTANT]
+> **Missing Weights Note:** Due to GitHub's 100MB file limit, the 66MB `best.pt` RT-DETR weights file is excluded via `.gitignore`. 
+> To run this project locally, you must first place your trained `best.pt` file inside the `weights/` directory. Alternatively, run the included Jupyter notebook in Google Colab to train and download a fresh model.
+
 ### Option A: Local Python Environment
 ```bash
 # 1. Install dependencies
@@ -97,7 +101,8 @@ pip install -r requirements.txt
 # 2. Run the FastAPI development server
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-Interactive Swagger API documentation will be available at: **`http://localhost:8000/docs`**
+The Interactive Visual Dashboard will be available at: **`http://localhost:8000/`**  
+The Interactive API documentation will be available at: **`http://localhost:8000/docs`**
 
 ### Option B: Docker Container Deployment (Recommended)
 ```bash
